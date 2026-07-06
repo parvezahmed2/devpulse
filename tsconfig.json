@@ -9,6 +9,7 @@
     // See also https://aka.ms/tsconfig/module
     "module": "esnext",
     "target": "esnext",
+    "moduleResolution" : "bundler",
     "types": ["node"],
     // For nodejs:
     // "lib": ["esnext"],
@@ -26,7 +27,7 @@
 
     // Style Options
     // "noImplicitReturns": true,
-    // "noImplicitOverride": true,
+    // "noImplicitOverride": true, rf
     // "noUnusedLocals": true,
     // "noUnusedParameters": true,
     // "noFallthroughCasesInSwitch": true,
@@ -41,5 +42,6 @@
     "moduleDetection": "force",
     "skipLibCheck": true,
   },
-  "include": ["src"]
+  "include": ["src/**/*"],
+  "exclude": []
 }
