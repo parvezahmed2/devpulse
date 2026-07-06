@@ -417,8 +417,42 @@ const updateIssue = async (issueId: number, updateData:ICreateIssue,user: { id: 
   
   
   
+const deleteIssue = async (issueId: number,user: {id: number;role: string;}) => {
+    const issueResult = await pool.query(
+       `
+       SELECT
+           id,
+           reporter_id
+       FROM issues
+       WHERE id = $1
+       `,
+       [issueId]
+    );
+    
+    if (issueResult.rows.length === 0) {
+       throw new Error("Issue not found"); 
+    }
   
+    
+    if (user.role !== "maintainer") {
+       throw new Error("Forbidden");
+    }
+     await pool.query(
+    
+    
+       `
+       DELETE FROM issues
+       WHERE id = $1
+       `,
+       [issueId]
+    
+  );
   
+    return;
+    };
+    
+   
+   
   
   
   
@@ -431,6 +465,7 @@ export const issueService = {
   createIssue,
   getAllIssues,
   getSingleIssue,
-  updateIssue
+  updateIssue,
+  deleteIssue
    
 }
