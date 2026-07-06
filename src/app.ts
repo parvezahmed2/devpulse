@@ -10,15 +10,6 @@ app.use(express.urlencoded({
     extended: true
 }))
 
-
-app.get('/', (req : Request, res : Response) => {
-     
-    console.log("server is runnint")
-    res.status(200).json({
-        "message" : "Express Server",
-        "author" : "Next Level"
-    })
-    })
 app.use('/api/auth', authRouter)
 app.use('/api/issues', issuesRouter)
 

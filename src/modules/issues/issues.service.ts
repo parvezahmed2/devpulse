@@ -257,31 +257,14 @@ const getSingleIssue = async (issueId: number) => {
 
 
       id: issue.id,
-
-
       title: issue.title,
-
-
       description: issue.description,
-
-
       type: issue.type,
-
-
       status: issue.status,
-
-
       reporter: reporterResult.rows[0],
-
-
       created_at: issue.created_at,
-
-
       updated_at: issue.updated_at
-
-
   };
-
 
 };
 
