@@ -10,16 +10,10 @@ export const authorize = (...roles: string[]) => { return (req: Request,res: Res
                 message: "Unauthorized"
 
             });
-
             return;
 
         }
-
-      
-
         const userRole = req.user.role;
-
-        
 
         if (!roles.includes(userRole)) {
 
@@ -28,7 +22,6 @@ export const authorize = (...roles: string[]) => { return (req: Request,res: Res
                 success: false,
 
                 message: "Forbidden. You do not have permission."
-
             });
 
             return;

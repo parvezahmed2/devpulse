@@ -2,82 +2,62 @@ import type { NextFunction, Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import { issueService } from "./issues.service";
 import type { IJwtPayload, RUser } from "./issues.interface";
+import { sendResponse } from "../../utils/sendResponse";
  
  
 
- const createIssue = async (req: Request,res: Response) => {
+ const createIssue = async (req: Request,res: Response,next: NextFunction) => {
     try {
       const result = await  issueService.createIssue(req.body, req.user  as IJwtPayload);
   
-      res.status(StatusCodes.CREATED).json({
+      sendResponse(res, {
+        statusCode: StatusCodes.CREATED,
         success: true,
         message: "Issue created successfully",
-        data: result,
-      });
-    } catch (error: any) {
-      res.status(StatusCodes.BAD_REQUEST).json({
-        success: false,
-        message: error.message
-      });
+        data : result
+      })
+
+    } catch (error) {
+      next(error)
     }
   };
   
 
-const getAllIssues = async (req: Request,res: Response) => {
+const getAllIssues = async (req: Request,res: Response, next: NextFunction) => {
     try {
       const result = await issueService.getAllIssues(req.body);
-  
-      res.status(StatusCodes.OK).json({
-        success: true,
+
+      sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        success:true,
         message: "Issues retrieved successfully",
-        data: result,
-      });
-    } catch (error: any) {
-      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        success: false,
-        message: error.message,
-        errors: error,
-      });
+        data : result
+      })
+  
+    } catch (error) {
+      next(error);
     }
   };
 
-const getSingleIssue = async (req: Request,res: Response) => {
+const getSingleIssue = async (req: Request,res: Response, next: NextFunction) => {
 
     try {
         const issueId = Number(req.params.id);
  
         const result = await issueService.getSingleIssue(issueId);
- 
+      
 
-        res.status(StatusCodes.OK).json({
+        sendResponse(res, {
+          statusCode: StatusCodes.OK,
+          success:true,
+          message: "Issues retrieved successfully",
+          data : result
+        })
 
-            success: true,
-            message: "Issue retrieved successfully",
-            data: result
-
-        });
-
-    } catch (error: any) {
-        
-        if (error.message === "Issue not found") {
-            return res.status(StatusCodes.NOT_FOUND).json({
-             success: false,
-             message: error.message
-
-            });
-
-        }
-
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-
-            success: false,
-
-            message: error.message
-
-        });
+    } catch (error) {
+       next(error)
 
     }
-
 };
  
 
@@ -92,8 +72,7 @@ const updateIssueController = async (req: Request,res: Response,next: NextFuncti
       if (isNaN(issueId)) {
          res.status(400).json({
               success: false,
-              message: "Invalid Issue ID"
- });
+              message: "Invalid Issue ID"});
           return;
       }
  
@@ -106,31 +85,21 @@ const updateIssueController = async (req: Request,res: Response,next: NextFuncti
       };
  
       const user = req.user as {id: number;role: string; };
-
       const updatedIssue = await issueService.updateIssue( issueId, updateData, user );
     
-      res.status(200).json({
- 
- 
-          success: true,
-          message: "Issue updated successfully",
-          data: updatedIssue
-      });
- 
-  }
- 
- 
-  catch (error) {
- 
- 
+
+      sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        success:true,
+        message: "Issue updated successfully",
+        data : updatedIssue
+      })
       
-      next(error);
- 
- 
   }
- 
- 
- };
+  catch (error) {
+      next(error);
+
+  }};
  
  
  
@@ -139,19 +108,22 @@ const deleteIssueController = async ( req: Request,res: Response,next: NextFunct
   try {
       const issueId = Number(req.params.id);
       if (isNaN(issueId)) {
-            res.status(400).json({
-               success: false,
+             sendResponse(res, {
+              statusCode: StatusCodes.BAD_REQUEST ,
+              success:true,
               message: "Invalid Issue ID"
-             });
+            })
               return;
              }
      
       const user = req.user as  RUser
       await issueService.deleteIssue(  issueId, user );
-      res.status(200).json({
-          success: true,
-          message: "Issue deleted successfully"
-      });
+      
+      sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        success:true,
+        message:"Issue deleted successfully"
+      }) 
   }
   catch (error) {
       next(error);
@@ -162,9 +134,6 @@ const deleteIssueController = async ( req: Request,res: Response,next: NextFunct
 
 
  
- 
-
-
 
 
 export const issuesController = {
