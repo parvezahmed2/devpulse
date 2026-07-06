@@ -135,9 +135,32 @@ const updateIssueController = async (req: Request,res: Response,next: NextFuncti
  
  
  
- 
- 
- 
+const deleteIssueController = async ( req: Request,res: Response,next: NextFunction): Promise<void> => {
+  try {
+      const issueId = Number(req.params.id);
+      if (isNaN(issueId)) {
+            res.status(400).json({
+               success: false,
+              message: "Invalid Issue ID"
+             });
+              return;
+             }
+     
+      const user = req.user as  RUser
+      await issueService.deleteIssue(  issueId, user );
+      res.status(200).json({
+          success: true,
+          message: "Issue deleted successfully"
+      });
+  }
+  catch (error) {
+      next(error);
+  }
+};
+
+
+
+
  
  
 
@@ -148,6 +171,7 @@ export const issuesController = {
   createIssue,
   getAllIssues,
   getSingleIssue,
-  updateIssueController
+  updateIssueController,
+  deleteIssueController
   
 }
