@@ -289,6 +289,139 @@ const getSingleIssue = async (issueId: number) => {
 
 
 
+
+const updateIssue = async (issueId: number, updateData:ICreateIssue,user: { id: number;role: string;}) => {
+
+
+  const issueResult = await pool.query(
+     `
+     SELECT
+         *
+     FROM issues
+     WHERE id = $1
+     `,
+  
+     [issueId] 
+);
+
+  
+  if (issueResult.rows.length === 0) {
+  
+     throw new Error("Issue not found");
+  
+  }
+  
+  const issue = issueResult.rows[0];
+
+  
+  if (
+     updateData.title &&
+     updateData.title.length > 150
+  ) {
+     throw new Error(
+         "Title cannot exceed 150 characters"
+     );
+  }
+  
+
+  if (
+     updateData.description &&
+     updateData.description.length < 20
+  ) {
+  
+     throw new Error(
+         "Description must be at least 20 characters"
+     );
+  }
+  
+  
+  if (
+     updateData.type &&
+     updateData.type !== "bug" &&
+     updateData.type !== "feature_request"
+  ) {
+     throw new Error(
+         "Type must be bug or feature_request"
+     );
+  }
+  
+  
+  if (user.role === "maintainer") {
+  }
+  else {
+     if (issue.reporter_id !== user.id) {
+         throw new Error("Forbidden");
+     }
+  
+     if (issue.status !== "open") {
+         throw new Error(
+             "Only open issues can be updated"
+         );
+     }
+  }
+
+
+  const fields: string[] = [];
+  
+  const values: any[] = [];
+  
+  if (updateData.title !== undefined) {
+  
+     values.push(updateData.title);
+  
+     fields.push(`title = $${values.length}`);
+  }
+  
+  if (updateData.description !== undefined) {
+  
+     values.push(updateData.description);
+  
+     fields.push(`description = $${values.length}`);
+  }
+
+
+  if (updateData.type !== undefined) {
+
+     values.push(updateData.type);
+     fields.push(`type = $${values.length}`);
+  }
+  if (fields.length === 0) {
+     throw new Error("No data provided for update");
+  }
+  fields.push(`updated_at = CURRENT_TIMESTAMP`);
+  values.push(issueId);
+  const result = await pool.query(
+  
+     `
+     UPDATE issues
+     SET
+     ${fields.join(", ")}
+  
+     WHERE id = $${values.length}
+     RETURNING
+         id,
+         title,
+         description,
+         type,
+         status,
+         reporter_id,
+         created_at,
+         updated_at
+     `,
+  
+     values
+  );
+  return result.rows[0];
+  };
+  
+  
+  
+  
+  
+  
+  
+  
+  
  
 
 
@@ -297,6 +430,7 @@ const getSingleIssue = async (issueId: number) => {
 export const issueService = {
   createIssue,
   getAllIssues,
-  getSingleIssue
+  getSingleIssue,
+  updateIssue
    
 }
