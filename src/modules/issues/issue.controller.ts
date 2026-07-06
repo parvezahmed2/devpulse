@@ -41,10 +41,7 @@ const getAllIssues = async (req: Request,res: Response) => {
     }
   };
 
-
-
- 
-  const getSingleIssue = async (req: Request,res: Response) => {
+const getSingleIssue = async (req: Request,res: Response) => {
 
     try {
         const issueId = Number(req.params.id);
@@ -85,12 +82,72 @@ const getAllIssues = async (req: Request,res: Response) => {
  
 
  
+const updateIssueController = async (req: Request,res: Response,next: NextFunction): Promise<void> => {
+
+
+  try {
+      const issueId = Number(req.params.id);
+ 
+ 
+      if (isNaN(issueId)) {
+         res.status(400).json({
+              success: false,
+              message: "Invalid Issue ID"
+ });
+          return;
+      }
+ 
+ 
+      const updateData = {
+          title: req.body.title,
+          description: req.body.description,
+          type: req.body.type
+ 
+      };
+ 
+      const user = req.user as {id: number;role: string; };
+
+      const updatedIssue = await issueService.updateIssue( issueId, updateData, user );
+    
+      res.status(200).json({
+ 
+ 
+          success: true,
+          message: "Issue updated successfully",
+          data: updatedIssue
+      });
+ 
+  }
+ 
+ 
+  catch (error) {
+ 
+ 
+      
+      next(error);
+ 
+ 
+  }
+ 
+ 
+ };
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
 
 
 
 export const issuesController = {
   createIssue,
   getAllIssues,
-  getSingleIssue
+  getSingleIssue,
+  updateIssueController
   
 }
