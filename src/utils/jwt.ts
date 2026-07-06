@@ -11,7 +11,6 @@ export const verifyToken = (
     return jwt.verify(
   
       token,
-  
       env.secret
   
     ) as IJwtPayload;

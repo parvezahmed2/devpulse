@@ -29,6 +29,10 @@ export interface ICreateIssue {
   type: IssueType;
 }
 
+export interface RUser {
+  id: number;
+  role: string;
+}
 
 export interface IJwtPayload {
   id: number;

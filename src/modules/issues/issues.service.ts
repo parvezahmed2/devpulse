@@ -1,8 +1,8 @@
 import { pool } from "../../db/index";
 import type { IUser } from "../auth/auth.interface";
-import type { ICreateIssue, IJwtPayload } from "./issues.interface";
+import type { ICreateIssue, IJwtPayload, IssueStatus, IssueType } from "./issues.interface";
 
-export const createIssue = async (issueData: ICreateIssue,reporterUser : IJwtPayload ) => {
+const createIssue = async (issueData: ICreateIssue,reporterUser : IJwtPayload ) => {
 
     const { title, description, type } = issueData;
      const reporterId= reporterUser.id;
@@ -75,60 +75,150 @@ export const createIssue = async (issueData: ICreateIssue,reporterUser : IJwtPay
   
     return result.rows[0];
   };
-  
+
+
+
+  const getAllIssues = async (sort: string = "newest",type?: IssueType,status?: IssueStatus) => {
+
+    let query = `
+        SELECT
+            id,
+            title,
+            description,
+            type,
+            status,
+            reporter_id,
+            created_at,
+            updated_at
+        FROM issues
+    `;
+
+     
+    const conditions: string[] = [];
+ 
+
+    const values: any[] = [];
+
+     
+
+    if (type) {
+
+        values.push(type);
+
+        conditions.push(
+            `type = $${values.length}`
+        );
+
+    }
 
   
 
- export const deleteIssue = async (issueId: number,user: {id: number;role: string;}) => {
-  const issueResult = await pool.query(
+    if (status) {
 
-      `
-      SELECT
-          id,
-          reporter_id
-      FROM issues
-      WHERE id = $1
-      `,
+        values.push(status);
 
-      [issueId]
+        conditions.push(
+            `status = $${values.length}`
+        );
 
-  );
+    }
 
-   
-  if (issueResult.rows.length === 0) {
+     
 
-      throw new Error("Issue not found");
+    if (conditions.length > 0) {
 
-  }
+        query += `
+            WHERE
+            ${conditions.join(" AND ")}
+        `;
 
-   
+    }
 
-  if (user.role !== "maintainer") {
+    if (sort === "oldest") {
 
-      throw new Error("Forbidden");
+        query += `
+            ORDER BY created_at ASC
+        `;
 
-  }
+    }
 
+    else {
+
+        query += `
+            ORDER BY created_at DESC
+        `;
+
+    }
+
+     
+
+    const result = await pool.query(
+        query,
+        values
+    );
+
+     
   
-  await pool.query(
 
-      `
-      DELETE FROM issues
-      WHERE id = $1
-      `,
 
-      [issueId]
+     
+const reporterIds = [
+  ...new Set(
+      result.rows.map(
+          (issue) => issue.reporter_id
+      )
+  )
+];
 
-  );
+if (reporterIds.length === 0) {
+  return [];
+}
+ 
+const reporterResult = await pool.query(
+  `
+  SELECT
+      id,
+      name,
+      role
+  FROM users
+  WHERE id = ANY($1)
+  `,
+  [reporterIds]
+);
 
-   
-  return;
+const reporterMap = new Map<number, any>();
+
+for (const reporter of reporterResult.rows) {
+  reporterMap.set(reporter.id, reporter);
+}
+ 
+const issues = result.rows.map((issue) => ({
+  id: issue.id,
+  title: issue.title,
+  description: issue.description,
+  type: issue.type,
+  status: issue.status,
+  reporter: reporterMap.get(issue.reporter_id),
+  created_at: issue.created_at,
+  updated_at: issue.updated_at,
+}));
+
+return issues;
+
+
 
 };
+  
+
+ 
+
+ 
 
 
 
 
 export const issueService = {
-  createIssue
+  createIssue,
+  getAllIssues
+   
 }

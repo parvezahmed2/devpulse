@@ -9,13 +9,11 @@ export const authenticate = (req: Request,res: Response,next: NextFunction): voi
 
     try { 
         const authHeader = req.headers.authorization;
+        
  
         if (!authHeader) {
-
-            res.status(401).json({
-
+             res.status(401).json({
                 success: false,
-
                 message: "Authorization token is required"
 
             });
@@ -23,13 +21,9 @@ export const authenticate = (req: Request,res: Response,next: NextFunction): voi
             return;
 
         }
-
-         
-
-        const token = authHeader.split(" ")[1];
-
         
-
+        const token = authHeader.split(" ")[0];
+        
         if (!token) {
 
             res.status(401).json({
